@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Title -->
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Hike Management"
+            android:textAlignment="center"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="20dp"/>
+
+        <!-- Hike Name -->
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Hike Name">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edtName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Location -->
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilLocation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="Location">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edtLocation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Date -->
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="Select Date">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edtDate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:focusable="false"
+                android:clickable="true"/>
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Parking -->
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Parking Available"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"/>
+
+        <RadioGroup
+            android:id="@+id/rgParking"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <RadioButton
+                android:id="@+id/rbYes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="YES"/>
+
+            <RadioButton
+                android:id="@+id/rbNo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="NO"/>
+
+        </RadioGroup>
+        <TextView
+            android:id="@+id/txtParkingError"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/holo_red_dark"
+            android:visibility="gone"/>
+
+        <!-- Length -->
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Length (km)"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"/>
+
+        <NumberPicker
+            android:id="@+id/npLength"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <!-- Difficulty -->
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Difficulty"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"/>
+
+        <Spinner
+            android:id="@+id/spDifficulty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <!-- Description -->
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="Description">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edtDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minLines="4"
+                android:inputType="textMultiLine"/>
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Weather -->
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Weather Forecast"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"/>
+
+        <Spinner
+            android:id="@+id/spWeather"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <!-- Estimated Duration -->
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilDuration"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="Estimated Duration (Hours)">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edtDuration"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number"/>
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Save Button -->
+
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="SAVE HIKE"
+            android:layout_marginTop="24dp"/>
+
+    </LinearLayout>
+
+</ScrollView>
