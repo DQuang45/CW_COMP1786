@@ -12,6 +12,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.HikerManagement">
         <activity
+            android:name=".EditObservationActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AddObservationActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ObservationListActivity"
+            android:exported="false" />
+        <activity
             android:name=".EditHikeActivity"
             android:exported="false" />
         <activity
@@ -28,8 +37,7 @@
         </activity>
         <activity
             android:name=".MainActivity"
-            android:exported="false">
-        </activity>
+            android:exported="false" />
     </application>
 
 </manifest>

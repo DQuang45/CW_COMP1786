@@ -5,6 +5,11 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.Cursor;
+import android.content.ContentValues;
+import android.database.Cursor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -14,7 +19,7 @@ import java.util.List;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "Hike.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     public static final String TABLE_NAME = "hikes";
 
@@ -28,6 +33,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COL_DESCRIPTION = "description";
     public static final String COL_WEATHER = "weather";
     public static final String COL_DURATION = "duration";
+
+    // Observation table
+    public static final String TABLE_OBSERVATIONS = "observations";
+
+    public static final String OBS_COL_ID = "id";
+    public static final String OBS_COL_HIKE_ID = "hike_id";
+    public static final String OBS_COL_OBSERVATION = "observation";
+    public static final String OBS_COL_TIME = "observation_time";
+    public static final String OBS_COL_COMMENT = "comment";
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -52,12 +66,37 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         + ")";
 
         db.execSQL(CREATE_TABLE);
+
+        String createObservationTable =
+                "CREATE TABLE " + TABLE_OBSERVATIONS + " (" +
+                        OBS_COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        OBS_COL_HIKE_ID + " INTEGER NOT NULL, " +
+                        OBS_COL_OBSERVATION + " TEXT NOT NULL, " +
+                        OBS_COL_TIME + " TEXT NOT NULL, " +
+                        OBS_COL_COMMENT + " TEXT, " +
+                        "FOREIGN KEY(" + OBS_COL_HIKE_ID + ") REFERENCES " +
+                        TABLE_NAME + "(" + COL_ID + ") ON DELETE CASCADE" +
+                        ")";
+
+        db.execSQL(createObservationTable);
+
     }
 
     @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+    public void onUpgrade(
+            SQLiteDatabase db,
+            int oldVersion,
+            int newVersion
+    ) {
 
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
+        db.execSQL(
+                "DROP TABLE IF EXISTS " + TABLE_OBSERVATIONS
+        );
+
+        db.execSQL(
+                "DROP TABLE IF EXISTS " + TABLE_NAME
+        );
+
         onCreate(db);
     }
 
@@ -307,6 +346,155 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 values,
                 COL_ID + " = ?",
                 new String[]{String.valueOf(id)}
+        );
+
+        return result > 0;
+    }
+
+    public boolean insertObservation(
+            int hikeId,
+            String observation,
+            String observationTime,
+            String comment
+    ) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+
+        values.put(OBS_COL_HIKE_ID, hikeId);
+        values.put(OBS_COL_OBSERVATION, observation);
+        values.put(OBS_COL_TIME, observationTime);
+        values.put(OBS_COL_COMMENT, comment);
+
+        long result = db.insert(
+                TABLE_OBSERVATIONS,
+                null,
+                values
+        );
+
+        return result != -1;
+    }
+    public List<Observation> getObservationsByHikeId(
+            int hikeId
+    ) {
+
+        List<Observation> observationList =
+                new ArrayList<>();
+
+        SQLiteDatabase db =
+                this.getReadableDatabase();
+
+        Cursor cursor = db.query(
+                TABLE_OBSERVATIONS,
+                null,
+                OBS_COL_HIKE_ID + " = ?",
+                new String[]{String.valueOf(hikeId)},
+                null,
+                null,
+                OBS_COL_ID + " DESC"
+        );
+
+        if (cursor.moveToFirst()) {
+
+            do {
+
+                int id = cursor.getInt(
+                        cursor.getColumnIndexOrThrow(
+                                OBS_COL_ID
+                        )
+                );
+
+                String observation =
+                        cursor.getString(
+                                cursor.getColumnIndexOrThrow(
+                                        OBS_COL_OBSERVATION
+                                )
+                        );
+
+                String observationTime =
+                        cursor.getString(
+                                cursor.getColumnIndexOrThrow(
+                                        OBS_COL_TIME
+                                )
+                        );
+
+                String comment =
+                        cursor.getString(
+                                cursor.getColumnIndexOrThrow(
+                                        OBS_COL_COMMENT
+                                )
+                        );
+
+                Observation item =
+                        new Observation(
+                                id,
+                                hikeId,
+                                observation,
+                                observationTime,
+                                comment
+                        );
+
+                observationList.add(item);
+
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+
+        return observationList;
+    }
+    public boolean deleteObservation(int observationId) {
+
+        SQLiteDatabase db =
+                this.getWritableDatabase();
+
+        int result = db.delete(
+                TABLE_OBSERVATIONS,
+                OBS_COL_ID + " = ?",
+                new String[]{
+                        String.valueOf(observationId)
+                }
+        );
+
+        return result > 0;
+    }
+
+    public boolean updateObservation(
+            int observationId,
+            String observation,
+            String observationTime,
+            String comment
+    ) {
+
+        SQLiteDatabase db =
+                this.getWritableDatabase();
+
+        ContentValues values =
+                new ContentValues();
+
+        values.put(
+                OBS_COL_OBSERVATION,
+                observation
+        );
+
+        values.put(
+                OBS_COL_TIME,
+                observationTime
+        );
+
+        values.put(
+                OBS_COL_COMMENT,
+                comment
+        );
+
+        int result = db.update(
+                TABLE_OBSERVATIONS,
+                values,
+                OBS_COL_ID + " = ?",
+                new String[]{
+                        String.valueOf(observationId)
+                }
         );
 
         return result > 0;

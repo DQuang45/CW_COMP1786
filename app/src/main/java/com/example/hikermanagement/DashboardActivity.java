@@ -216,8 +216,9 @@ public class DashboardActivity
                 )
 
                 .setNeutralButton(
-                        "CLOSE",
-                        null
+                        "OBSERVATIONS",
+                        (dialog, which) ->
+                                openObservations(hike)
                 )
 
                 .show();
@@ -278,6 +279,26 @@ public class DashboardActivity
         intent.putExtra(
                 "HIKE_DURATION",
                 hike.getDuration()
+        );
+
+        startActivity(intent);
+    }
+
+    private void openObservations(Hike hike) {
+
+        Intent intent = new Intent(
+                DashboardActivity.this,
+                ObservationListActivity.class
+        );
+
+        intent.putExtra(
+                "HIKE_ID",
+                hike.getId()
+        );
+
+        intent.putExtra(
+                "HIKE_NAME",
+                hike.getName()
         );
 
         startActivity(intent);
