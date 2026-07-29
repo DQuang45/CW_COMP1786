@@ -50,12 +50,14 @@
         android:textSize="16sp"
         android:textStyle="bold" />
 
-    <ListView
-        android:id="@+id/listViewHikes"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewHikes"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:dividerHeight="8dp" />
+        android:clipToPadding="false"
+        android:paddingTop="8dp"
+        android:paddingBottom="16dp" />
 
     <TextView
         android:id="@+id/txtEmpty"

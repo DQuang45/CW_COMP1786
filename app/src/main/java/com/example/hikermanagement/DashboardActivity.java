@@ -5,45 +5,62 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ListView;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DashboardActivity extends AppCompatActivity {
+public class DashboardActivity
+        extends AppCompatActivity {
 
     private TextInputEditText edtSearch;
 
     private Button btnAddHike;
 
-    private ListView listViewHikes;
+    private RecyclerView recyclerViewHikes;
 
     private TextView txtEmpty;
     private TextView txtResultCount;
 
     private DatabaseHelper databaseHelper;
 
-    private List<Hike> currentHikeList;
+    private HikeAdapter hikeAdapter;
+
+    private List<Hike> currentHikeList =
+            new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_dashboard);
 
         edtSearch = findViewById(R.id.edtSearch);
+
         btnAddHike = findViewById(R.id.btnAddHike);
-        listViewHikes = findViewById(R.id.listViewHikes);
+
+        recyclerViewHikes = findViewById(R.id.recyclerViewHikes);
+
         txtEmpty = findViewById(R.id.txtEmpty);
+
         txtResultCount = findViewById(R.id.txtResultCount);
 
         databaseHelper = new DatabaseHelper(this);
+
+        recyclerViewHikes.setLayoutManager(new LinearLayoutManager(this));
+
+        hikeAdapter = new HikeAdapter(new ArrayList<>(), this::showHikeDetails);
+
+        recyclerViewHikes.setAdapter(hikeAdapter);
 
         btnAddHike.setOnClickListener(v -> {
 
@@ -55,41 +72,38 @@ public class DashboardActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        edtSearch.addTextChangedListener(new TextWatcher() {
+        edtSearch.addTextChangedListener(
+                new TextWatcher() {
 
-            @Override
-            public void beforeTextChanged(
-                    CharSequence charSequence,
-                    int start,
-                    int count,
-                    int after) {
+                    @Override
+                    public void beforeTextChanged(
+                            CharSequence text,
+                            int start,
+                            int count,
+                            int after
+                    ) {
 
-            }
+                    }
 
-            @Override
-            public void onTextChanged(
-                    CharSequence charSequence,
-                    int start,
-                    int before,
-                    int count) {
+                    @Override
+                    public void onTextChanged(
+                            CharSequence text,
+                            int start,
+                            int before,
+                            int count
+                    ) {
 
-                String keyword = charSequence.toString().trim();
+                        searchHikes(
+                                text.toString().trim()
+                        );
+                    }
 
-                searchHikes(keyword);
-            }
+                    @Override
+                    public void afterTextChanged(
+                            Editable editable
+                    ) {
 
-            @Override
-            public void afterTextChanged(Editable editable) {
-
-            }
-        });
-
-        listViewHikes.setOnItemClickListener(
-                (parent, view, position, id) -> {
-
-                    Hike selectedHike = currentHikeList.get(position);
-
-                    showHikeDetails(selectedHike);
+                    }
                 }
         );
 
@@ -111,88 +125,247 @@ public class DashboardActivity extends AppCompatActivity {
 
         } else {
 
-            currentHikeList = databaseHelper.searchHikes(keyword);
+            currentHikeList =
+                    databaseHelper.searchHikes(
+                            keyword
+                    );
 
             displayHikes(currentHikeList);
         }
     }
 
-    private void displayHikes(List<Hike> hikeList) {
+    private void displayHikes(
+            List<Hike> hikeList
+    ) {
 
-        if (hikeList == null || hikeList.isEmpty()) {
+        if (hikeList == null
+                || hikeList.isEmpty()) {
 
-            listViewHikes.setVisibility(View.GONE);
-            txtEmpty.setVisibility(View.VISIBLE);
+            recyclerViewHikes.setVisibility(
+                    View.GONE
+            );
 
-            txtResultCount.setText("0 hikes found");
+            txtEmpty.setVisibility(
+                    View.VISIBLE
+            );
+
+            txtResultCount.setText(
+                    "0 hikes found"
+            );
+
+            hikeAdapter.updateData(
+                    new ArrayList<>()
+            );
 
             return;
         }
 
-        listViewHikes.setVisibility(View.VISIBLE);
-        txtEmpty.setVisibility(View.GONE);
-
-        txtResultCount.setText(
-                hikeList.size() + " hike(s) found"
+        recyclerViewHikes.setVisibility(
+                View.VISIBLE
         );
 
-        List<String> hikeDisplayList = new ArrayList<>();
+        txtEmpty.setVisibility(
+                View.GONE
+        );
 
-        for (Hike hike : hikeList) {
+        txtResultCount.setText(
+                hikeList.size()
+                        + " hike(s) found"
+        );
 
-            String hikeText =
-                    hike.getName()
-                            + "\nLocation: " + hike.getLocation()
-                            + "\nDate: " + hike.getDate()
-                            + "\nLength: " + hike.getLength() + " km"
-                            + "\nDifficulty: " + hike.getDifficulty();
-
-            hikeDisplayList.add(hikeText);
-        }
-
-        ArrayAdapter<String> adapter =
-                new ArrayAdapter<>(
-                        this,
-                        android.R.layout.simple_list_item_1,
-                        hikeDisplayList
-                );
-
-        listViewHikes.setAdapter(adapter);
+        hikeAdapter.updateData(hikeList);
     }
 
     private void showHikeDetails(Hike hike) {
 
         String message =
                 "Name: " + hike.getName()
-                        + "\n\nLocation: " + hike.getLocation()
-                        + "\n\nDate: " + hike.getDate()
-                        + "\n\nParking: " + hike.getParking()
-                        + "\n\nLength: " + hike.getLength() + " km"
-                        + "\n\nDifficulty: " + hike.getDifficulty()
-                        + "\n\nDescription: " + hike.getDescription()
-                        + "\n\nWeather: " + hike.getWeather()
+                        + "\n\nLocation: "
+                        + hike.getLocation()
+                        + "\n\nDate: "
+                        + hike.getDate()
+                        + "\n\nParking: "
+                        + hike.getParking()
+                        + "\n\nLength: "
+                        + hike.getLength()
+                        + " km"
+                        + "\n\nDifficulty: "
+                        + hike.getDifficulty()
+                        + "\n\nDescription: "
+                        + hike.getDescription()
+                        + "\n\nWeather: "
+                        + hike.getWeather()
                         + "\n\nEstimated Duration: "
-                        + hike.getDuration() + " hour(s)";
+                        + hike.getDuration()
+                        + " hour(s)";
 
-        new androidx.appcompat.app.AlertDialog.Builder(this)
+        new AlertDialog.Builder(this)
                 .setTitle("Hike Details")
                 .setMessage(message)
-                .setPositiveButton("CLOSE", null)
+
+                .setPositiveButton(
+                        "EDIT",
+                        (dialog, which) ->
+                                openEditHike(hike)
+                )
+
+                .setNegativeButton(
+                        "DELETE",
+                        (dialog, which) ->
+                                confirmDeleteHike(hike)
+                )
+
+                .setNeutralButton(
+                        "CLOSE",
+                        null
+                )
+
+                .show();
+    }
+
+    private void openEditHike(Hike hike) {
+
+        Intent intent = new Intent(
+                DashboardActivity.this,
+                EditHikeActivity.class
+        );
+
+        intent.putExtra(
+                "HIKE_ID",
+                hike.getId()
+        );
+
+        intent.putExtra(
+                "HIKE_NAME",
+                hike.getName()
+        );
+
+        intent.putExtra(
+                "HIKE_LOCATION",
+                hike.getLocation()
+        );
+
+        intent.putExtra(
+                "HIKE_DATE",
+                hike.getDate()
+        );
+
+        intent.putExtra(
+                "HIKE_PARKING",
+                hike.getParking()
+        );
+
+        intent.putExtra(
+                "HIKE_LENGTH",
+                hike.getLength()
+        );
+
+        intent.putExtra(
+                "HIKE_DIFFICULTY",
+                hike.getDifficulty()
+        );
+
+        intent.putExtra(
+                "HIKE_DESCRIPTION",
+                hike.getDescription()
+        );
+
+        intent.putExtra(
+                "HIKE_WEATHER",
+                hike.getWeather()
+        );
+
+        intent.putExtra(
+                "HIKE_DURATION",
+                hike.getDuration()
+        );
+
+        startActivity(intent);
+    }
+
+    private void confirmDeleteHike(
+            Hike hike
+    ) {
+
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Hike")
+                .setMessage(
+                        "Are you sure you want to delete \""
+                                + hike.getName()
+                                + "\"?"
+                )
+
+                .setPositiveButton(
+                        "YES",
+                        (dialog, which) -> {
+
+                            boolean result =
+                                    databaseHelper
+                                            .deleteHike(
+                                                    hike.getId()
+                                            );
+
+                            if (result) {
+
+                                new AlertDialog.Builder(
+                                        this
+                                )
+                                        .setTitle(
+                                                "Success"
+                                        )
+                                        .setMessage(
+                                                "Hike deleted successfully."
+                                        )
+                                        .setPositiveButton(
+                                                "OK",
+                                                (successDialog,
+                                                 successWhich) ->
+                                                        loadAllHikes()
+                                        )
+                                        .show();
+
+                            } else {
+
+                                new AlertDialog.Builder(
+                                        this
+                                )
+                                        .setTitle("Error")
+                                        .setMessage(
+                                                "Failed to delete hike."
+                                        )
+                                        .setPositiveButton(
+                                                "OK",
+                                                null
+                                        )
+                                        .show();
+                            }
+                        }
+                )
+
+                .setNegativeButton(
+                        "NO",
+                        null
+                )
+
                 .show();
     }
 
     @Override
     protected void onResume() {
+
         super.onResume();
 
         if (edtSearch != null) {
 
-            String keyword =
-                    edtSearch.getText() == null
-                            ? ""
-                            : edtSearch.getText()
-                            .toString()
-                            .trim();
+            String keyword = "";
+
+            if (edtSearch.getText() != null) {
+
+                keyword = edtSearch
+                        .getText()
+                        .toString()
+                        .trim();
+            }
 
             searchHikes(keyword);
         }
@@ -200,6 +373,7 @@ public class DashboardActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+
         super.onDestroy();
 
         if (databaseHelper != null) {
