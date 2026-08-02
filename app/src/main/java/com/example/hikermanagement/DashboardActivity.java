@@ -24,6 +24,7 @@ public class DashboardActivity
     private TextInputEditText edtSearch;
 
     private Button btnAddHike;
+    private Button btnDeleteAllHikes;
 
     private RecyclerView recyclerViewHikes;
 
@@ -43,10 +44,14 @@ public class DashboardActivity
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_dashboard);
-
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
         edtSearch = findViewById(R.id.edtSearch);
 
         btnAddHike = findViewById(R.id.btnAddHike);
+
+        btnDeleteAllHikes = findViewById(R.id.btnDeleteAllHikes);
 
         recyclerViewHikes = findViewById(R.id.recyclerViewHikes);
 
@@ -70,6 +75,12 @@ public class DashboardActivity
             );
 
             startActivity(intent);
+        });
+
+        btnDeleteAllHikes.setOnClickListener(v -> {
+
+            confirmDeleteAllHikes();
+
         });
 
         edtSearch.addTextChangedListener(
@@ -399,6 +410,86 @@ public class DashboardActivity
 
         if (databaseHelper != null) {
             databaseHelper.close();
+        }
+    }
+
+    private void confirmDeleteAllHikes() {
+
+        if (currentHikeList == null
+                || currentHikeList.isEmpty()) {
+
+            new AlertDialog.Builder(this)
+                    .setTitle("No Hikes")
+                    .setMessage(
+                            "There are no hikes to delete."
+                    )
+                    .setPositiveButton(
+                            "OK",
+                            null
+                    )
+                    .show();
+
+            return;
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle("Delete All Hikes")
+                .setMessage(
+                        "Are you sure you want to delete all hikes?\n\n"
+                                + "All related observations will also be deleted.\n\n"
+                                + "This action cannot be undone."
+                )
+                .setPositiveButton(
+                        "DELETE ALL",
+                        (dialog, which) -> {
+
+                            deleteAllHikes();
+
+                        }
+                )
+                .setNegativeButton(
+                        "CANCEL",
+                        null
+                )
+                .show();
+    }
+    private void deleteAllHikes() {
+
+        boolean result =
+                databaseHelper.deleteAllHikes();
+
+        if (result) {
+
+            edtSearch.setText("");
+
+            currentHikeList =
+                    new ArrayList<>();
+
+            displayHikes(currentHikeList);
+
+            new AlertDialog.Builder(this)
+                    .setTitle("Success")
+                    .setMessage(
+                            "All hikes and observations were deleted successfully."
+                    )
+                    .setPositiveButton(
+                            "OK",
+                            null
+                    )
+                    .show();
+
+        } else {
+
+            new AlertDialog.Builder(this)
+                    .setTitle("Error")
+                    .setMessage(
+                            "Failed to delete all hikes."
+                    )
+                    .setPositiveButton(
+                            "OK",
+                            null
+                    )
+                    .show();
         }
     }
 }

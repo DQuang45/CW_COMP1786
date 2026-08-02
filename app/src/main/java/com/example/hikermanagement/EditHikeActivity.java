@@ -4,7 +4,6 @@ import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.NumberPicker;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 
@@ -19,24 +18,17 @@ import java.util.Calendar;
 public class EditHikeActivity extends AppCompatActivity {
 
     // TextInputLayout
-    private TextInputLayout tilEditName;
-    private TextInputLayout tilEditLocation;
-    private TextInputLayout tilEditDate;
-    private TextInputLayout tilEditDescription;
-    private TextInputLayout tilEditDuration;
+    private TextInputLayout tilEditName, tilEditLocation, tilEditDate
+            , tilEditDuration, tilEditLength, tilEditDescription;
+
 
     // EditText
-    private TextInputEditText edtEditName;
-    private TextInputEditText edtEditLocation;
-    private TextInputEditText edtEditDate;
-    private TextInputEditText edtEditDescription;
-    private TextInputEditText edtEditDuration;
+    private TextInputEditText edtEditName, edtEditLocation, edtEditDate
+            , edtEditDescription, edtEditDuration, edtEditLength;
+
 
     // Parking
     private RadioGroup rgEditParking;
-
-    // NumberPicker
-    private NumberPicker npEditLength;
 
     // Spinner
     private Spinner spEditDifficulty;
@@ -74,7 +66,6 @@ public class EditHikeActivity extends AppCompatActivity {
 
         bindViews();
 
-        setupNumberPicker();
 
         setupSpinners();
 
@@ -88,6 +79,11 @@ public class EditHikeActivity extends AppCompatActivity {
                 showUpdateConfirmation();
             }
         });
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().show();
+            getSupportActionBar().setTitle("Edit Hike");
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     private void bindViews() {
@@ -106,7 +102,9 @@ public class EditHikeActivity extends AppCompatActivity {
 
         rgEditParking = findViewById(R.id.rgEditParking);
 
-        npEditLength = findViewById(R.id.npEditLength);
+        tilEditLength = findViewById(R.id.tilEditLength);
+
+        edtEditLength = findViewById(R.id.edtEditLength);
 
         spEditDifficulty = findViewById(R.id.spEditDifficulty);
         spEditWeather = findViewById(R.id.spEditWeather);
@@ -114,11 +112,6 @@ public class EditHikeActivity extends AppCompatActivity {
         btnUpdateHike = findViewById(R.id.btnUpdateHike);
     }
 
-    private void setupNumberPicker() {
-
-        npEditLength.setMinValue(1);
-        npEditLength.setMaxValue(50);
-    }
 
     private void setupSpinners() {
 
@@ -196,8 +189,7 @@ public class EditHikeActivity extends AppCompatActivity {
         edtEditDate.setText(date);
         edtEditDescription.setText(description);
         edtEditDuration.setText(duration);
-
-        npEditLength.setValue(length);
+        edtEditLength.setText(String.valueOf(length));
 
         if ("YES".equalsIgnoreCase(parking)) {
             rgEditParking.check(R.id.rbEditYes);
@@ -274,6 +266,7 @@ public class EditHikeActivity extends AppCompatActivity {
 
         boolean isValid = true;
 
+        tilEditLength.setError(null);
         tilEditName.setError(null);
         tilEditLocation.setError(null);
         tilEditDate.setError(null);
@@ -282,8 +275,8 @@ public class EditHikeActivity extends AppCompatActivity {
         String name = getText(edtEditName);
         String location = getText(edtEditLocation);
         String date = getText(edtEditDate);
-
         String duration = getText(edtEditDuration);
+        String lengthText = getText(edtEditLength);
 
         if (name.isEmpty()) {
             tilEditName.setError("Please enter hike name");
@@ -298,6 +291,40 @@ public class EditHikeActivity extends AppCompatActivity {
         if (date.isEmpty()) {
             tilEditDate.setError("Please select date");
             isValid = false;
+        }
+
+        if (lengthText.isEmpty()) {
+
+            tilEditLength.setError(
+                    "Please enter hike length"
+            );
+
+            isValid = false;
+
+        } else {
+
+            try {
+
+                int length =
+                        Integer.parseInt(lengthText);
+
+                if (length <= 0) {
+
+                    tilEditLength.setError(
+                            "Length must be greater than 0"
+                    );
+
+                    isValid = false;
+                }
+
+            } catch (NumberFormatException e) {
+
+                tilEditLength.setError(
+                        "Please enter a valid length"
+                );
+
+                isValid = false;
+            }
         }
 
         if (duration.isEmpty()) {
@@ -339,8 +366,7 @@ public class EditHikeActivity extends AppCompatActivity {
         String date = getText(edtEditDate);
         String description = getText(edtEditDescription);
         String duration = getText(edtEditDuration);
-
-        int length = npEditLength.getValue();
+        int length = Integer.parseInt(getText(edtEditLength));
 
         String difficulty =
                 spEditDifficulty.getSelectedItem().toString();
@@ -448,5 +474,10 @@ public class EditHikeActivity extends AppCompatActivity {
         if (databaseHelper != null) {
             databaseHelper.close();
         }
+    }
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return true;
     }
 }

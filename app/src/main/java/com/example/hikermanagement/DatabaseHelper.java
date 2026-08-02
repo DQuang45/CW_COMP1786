@@ -5,13 +5,6 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.Cursor;
-import android.content.ContentValues;
-import android.database.Cursor;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import androidx.recyclerview.widget.LinearLayoutManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -220,12 +213,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         + " WHERE " + COL_NAME + " LIKE ?"
                         + " OR " + COL_LOCATION + " LIKE ?"
                         + " OR " + COL_DATE + " LIKE ?"
+                        + " OR CAST(" + COL_LENGTH + " AS TEXT) LIKE ?"
                         + " OR " + COL_DIFFICULTY + " LIKE ?"
                         + " ORDER BY " + COL_ID + " DESC";
 
         Cursor cursor = db.rawQuery(
                 query,
                 new String[]{
+                        searchValue,
                         searchValue,
                         searchValue,
                         searchValue,
@@ -303,15 +298,43 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public boolean deleteHike(int id) {
 
-        SQLiteDatabase db = this.getWritableDatabase();
+        SQLiteDatabase db =
+                this.getWritableDatabase();
 
-        int result = db.delete(
-                TABLE_NAME,
-                COL_ID + " = ?",
-                new String[]{String.valueOf(id)}
-        );
+        db.beginTransaction();
 
-        return result > 0;
+        try {
+
+            db.delete(
+                    TABLE_OBSERVATIONS,
+                    OBS_COL_HIKE_ID + " = ?",
+                    new String[]{
+                            String.valueOf(id)
+                    }
+            );
+
+            int result = db.delete(
+                    TABLE_NAME,
+                    COL_ID + " = ?",
+                    new String[]{
+                            String.valueOf(id)
+                    }
+            );
+
+            db.setTransactionSuccessful();
+
+            return result > 0;
+
+        } catch (Exception exception) {
+
+            exception.printStackTrace();
+
+            return false;
+
+        } finally {
+
+            db.endTransaction();
+        }
     }
 
     public boolean updateHike(
@@ -498,6 +521,43 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         );
 
         return result > 0;
+    }
+
+    public boolean deleteAllHikes() {
+
+        SQLiteDatabase db =
+                this.getWritableDatabase();
+
+        db.beginTransaction();
+
+        try {
+
+            db.delete(
+                    TABLE_OBSERVATIONS,
+                    null,
+                    null
+            );
+
+            db.delete(
+                    TABLE_NAME,
+                    null,
+                    null
+            );
+
+            db.setTransactionSuccessful();
+
+            return true;
+
+        } catch (Exception exception) {
+
+            exception.printStackTrace();
+
+            return false;
+
+        } finally {
+
+            db.endTransaction();
+        }
     }
 
 }

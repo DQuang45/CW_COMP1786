@@ -12,7 +12,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+
 import java.util.List;
+
 
 public class ObservationListActivity
         extends AppCompatActivity {
@@ -128,6 +130,9 @@ public class ObservationListActivity
         });
 
         loadObservations();
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     private void loadObservations() {
@@ -218,6 +223,7 @@ public class ObservationListActivity
     private void openEditObservation(
             Observation observation
     ) {
+
 
         Intent intent = new Intent(
                 ObservationListActivity.this,
@@ -311,5 +317,10 @@ public class ObservationListActivity
 
             loadObservations();
         }
+    }
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return true;
     }
 }

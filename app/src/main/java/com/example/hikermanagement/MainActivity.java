@@ -1,36 +1,37 @@
 package com.example.hikermanagement;
 
+import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.NumberPicker;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
-import android.widget.ArrayAdapter;
-import android.app.DatePickerDialog;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
-import java.util.Calendar;
-
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
+import java.util.Calendar;
+
 public class MainActivity extends AppCompatActivity {
+
     // TextInputLayout
-    private TextInputLayout tilName, tilLocation, tilDate, tilDescription, tilDuration;
+    private TextInputLayout tilName, tilLocation, tilDate,
+            tilDescription, tilDuration, tilLength;
+
 
     // EditText
-    private TextInputEditText edtName, edtLocation, edtDate, edtDescription, edtDuration;
+    private TextInputEditText edtName, edtLocation, edtDate,
+            edtDescription, edtDuration, edtLength;
 
     // RadioGroup
     private RadioGroup rgParking;
 
-    // NumberPicker
-    private NumberPicker npLength;
+    // Parking validation message
     private TextView txtParkingError;
 
     // Spinner
@@ -44,35 +45,47 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         databaseHelper = new DatabaseHelper(this);
+
+        // TextInputLayout
         tilName = findViewById(R.id.tilName);
         tilLocation = findViewById(R.id.tilLocation);
         tilDate = findViewById(R.id.tilDate);
         tilDescription = findViewById(R.id.tilDescription);
         tilDuration = findViewById(R.id.tilDuration);
-        txtParkingError = findViewById(R.id.txtParkingError);
 
+        // TextInputEditText
         edtName = findViewById(R.id.edtName);
         edtLocation = findViewById(R.id.edtLocation);
         edtDate = findViewById(R.id.edtDate);
         edtDescription = findViewById(R.id.edtDescription);
         edtDuration = findViewById(R.id.edtDuration);
 
+        // Parking
         rgParking = findViewById(R.id.rgParking);
+        txtParkingError = findViewById(R.id.txtParkingError);
 
-        npLength = findViewById(R.id.npLength);
+        // Length
+        tilLength = findViewById(R.id.tilLength);
+        edtLength = findViewById(R.id.edtLength);
 
+        // Spinner
         spDifficulty = findViewById(R.id.spDifficulty);
         spWeather = findViewById(R.id.spWeather);
 
+        // Save button
         btnSave = findViewById(R.id.btnSave);
-        npLength.setMinValue(1);
-        npLength.setMaxValue(50);
-        npLength.setValue(5);
 
-        String[] difficulty = {
+        /*
+         * Difficulty is required.
+         * The first option is a placeholder and is not a valid selection.
+         */
+        String[] difficultyOptions = {
+                "Select difficulty",
                 "Easy",
                 "Medium",
                 "Hard"
@@ -82,13 +95,18 @@ public class MainActivity extends AppCompatActivity {
                 new ArrayAdapter<>(
                         this,
                         android.R.layout.simple_spinner_item,
-                        difficulty);
+                        difficultyOptions
+                );
 
         difficultyAdapter.setDropDownViewResource(
-                android.R.layout.simple_spinner_dropdown_item);
+                android.R.layout.simple_spinner_dropdown_item
+        );
 
         spDifficulty.setAdapter(difficultyAdapter);
 
+        /*
+         * Weather Forecast is one of the additional fields.
+         */
         String[] weather = {
                 "Sunny",
                 "Cloudy",
@@ -100,13 +118,19 @@ public class MainActivity extends AppCompatActivity {
                 new ArrayAdapter<>(
                         this,
                         android.R.layout.simple_spinner_item,
-                        weather);
+                        weather
+                );
 
         weatherAdapter.setDropDownViewResource(
-                android.R.layout.simple_spinner_dropdown_item);
+                android.R.layout.simple_spinner_dropdown_item
+        );
 
         spWeather.setAdapter(weatherAdapter);
 
+        /*
+         * Date is selected using DatePickerDialog
+         * to reduce manual input and formatting errors.
+         */
         edtDate.setOnClickListener(v -> {
 
             Calendar calendar = Calendar.getInstance();
@@ -115,120 +139,201 @@ public class MainActivity extends AppCompatActivity {
             int month = calendar.get(Calendar.MONTH);
             int day = calendar.get(Calendar.DAY_OF_MONTH);
 
-            DatePickerDialog datePickerDialog = new DatePickerDialog(
-                    MainActivity.this,
-                    (view, selectedYear, selectedMonth, selectedDay) -> {
+            DatePickerDialog datePickerDialog =
+                    new DatePickerDialog(
+                            MainActivity.this,
+                            (view,
+                             selectedYear,
+                             selectedMonth,
+                             selectedDay) -> {
 
-                        String date = String.format(
-                                "%02d/%02d/%04d",
-                                selectedDay,
-                                selectedMonth + 1,
-                                selectedYear
-                        );
+                                String date = String.format(
+                                        "%02d/%02d/%04d",
+                                        selectedDay,
+                                        selectedMonth + 1,
+                                        selectedYear
+                                );
 
-                        edtDate.setText(date);
-
-                    },
-                    year,
-                    month,
-                    day
-            );
+                                edtDate.setText(date);
+                            },
+                            year,
+                            month,
+                            day
+                    );
 
             datePickerDialog.show();
-
         });
 
-
+        /*
+         * Validate first.
+         * The confirmation dialog is displayed only when
+         * all required fields are valid.
+         */
         btnSave.setOnClickListener(v -> {
 
             if (validateInput()) {
                 showConfirmationDialog();
-
             }
-
         });
 
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().show();
+            getSupportActionBar().setTitle("Add Hike");
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
     }
+
     private void showConfirmationDialog() {
 
-        String name = edtName.getText().toString().trim();
-        String location = edtLocation.getText().toString().trim();
-        String date = edtDate.getText().toString().trim();
-        String description = edtDescription.getText().toString().trim();
-        String duration = edtDuration.getText().toString().trim();
+        String name =
+                edtName.getText() == null
+                        ? ""
+                        : edtName.getText().toString().trim();
 
-        int length = npLength.getValue();
+        String location =
+                edtLocation.getText() == null
+                        ? ""
+                        : edtLocation.getText().toString().trim();
 
-        String difficulty = spDifficulty.getSelectedItem().toString();
-        String weather = spWeather.getSelectedItem().toString();
+        String date =
+                edtDate.getText() == null
+                        ? ""
+                        : edtDate.getText().toString().trim();
+
+        String description =
+                edtDescription.getText() == null
+                        ? ""
+                        : edtDescription.getText().toString().trim();
+
+        String duration =
+                edtDuration.getText() == null
+                        ? ""
+                        : edtDuration.getText().toString().trim();
+
+        int length = Integer.parseInt(
+                getText(edtLength)
+        );
+        String difficulty =
+                spDifficulty.getSelectedItem() == null
+                        ? ""
+                        : spDifficulty.getSelectedItem()
+                        .toString();
+
+        String weather =
+                spWeather.getSelectedItem() == null
+                        ? ""
+                        : spWeather.getSelectedItem()
+                        .toString();
 
         String parking;
 
-        int checkedId = rgParking.getCheckedRadioButtonId();
+        int checkedId =
+                rgParking.getCheckedRadioButtonId();
 
         if (checkedId == R.id.rbYes) {
+
             parking = "YES";
+
         } else if (checkedId == R.id.rbNo) {
+
             parking = "NO";
+
         } else {
+
             parking = "";
         }
 
+        /*
+         * Description and duration are not core required fields.
+         * Empty optional values are displayed clearly for confirmation.
+         */
+        String displayedDescription =
+                description.isEmpty()
+                        ? "Not provided"
+                        : description;
+
+        String displayedDuration =
+                duration.isEmpty()
+                        ? "Not provided"
+                        : duration + " hour(s)";
+
         String message =
                 "Name: " + name +
-                        "\nLocation: " + location +
-                        "\nDate: " + date +
-                        "\nParking: " + parking +
-                        "\nLength: " + length + " km" +
-                        "\nDifficulty: " + difficulty +
-                        "\nDescription: " + description +
-                        "\nWeather: " + weather +
-                        "\nEstimated Duration: " + duration + " hour(s)" +
-                        "\n\nConfirm?";
+                        "\n\nLocation: " + location +
+                        "\n\nDate: " + date +
+                        "\n\nParking: " + parking +
+                        "\n\nLength: " + length + " km" +
+                        "\n\nDifficulty: " + difficulty +
+                        "\n\nDescription: " + displayedDescription +
+                        "\n\nWeather: " + weather +
+                        "\n\nEstimated Duration: " + displayedDuration +
+                        "\n\nConfirm these hike details?";
 
         new AlertDialog.Builder(this)
                 .setTitle("Confirm Hike")
                 .setMessage(message)
-                .setPositiveButton("YES", (dialog, which) -> {
+                .setPositiveButton(
+                        "YES",
+                        (dialog, which) -> {
 
-                    boolean result = databaseHelper.insertHike(
-                            name,
-                            location,
-                            date,
-                            parking,
-                            length,
-                            difficulty,
-                            description,
-                            weather,
-                            duration
-                    );
+                            boolean result =
+                                    databaseHelper.insertHike(
+                                            name,
+                                            location,
+                                            date,
+                                            parking,
+                                            length,
+                                            difficulty,
+                                            description,
+                                            weather,
+                                            duration
+                                    );
 
-                    if (result) {
-                        clearForm();
+                            if (result) {
 
-                        new AlertDialog.Builder(MainActivity.this)
-                                .setTitle("Success")
-                                .setMessage("Hike saved successfully.")
-                                .setPositiveButton("OK", (successDialog, successWhich) -> {
+                                clearForm();
 
-                                    finish();
+                                new AlertDialog.Builder(
+                                        MainActivity.this
+                                )
+                                        .setTitle("Success")
+                                        .setMessage(
+                                                "Hike saved successfully."
+                                        )
+                                        .setPositiveButton(
+                                                "OK",
+                                                (successDialog,
+                                                 successWhich) -> {
 
-                                })
-                                .show();
-                    } else {
+                                                    finish();
+                                                }
+                                        )
+                                        .show();
 
-                        new AlertDialog.Builder(MainActivity.this)
-                                .setTitle("Error")
-                                .setMessage("Failed to save hike.")
-                                .setPositiveButton("OK", null)
-                                .show();
+                            } else {
 
-                    }
-
-                })
-                .setNegativeButton("NO", null)
+                                new AlertDialog.Builder(
+                                        MainActivity.this
+                                )
+                                        .setTitle("Error")
+                                        .setMessage(
+                                                "Failed to save hike."
+                                        )
+                                        .setPositiveButton(
+                                                "OK",
+                                                null
+                                        )
+                                        .show();
+                            }
+                        }
+                )
+                .setNegativeButton(
+                        "NO",
+                        null
+                )
                 .show();
     }
+
     private void clearForm() {
 
         edtName.setText("");
@@ -238,16 +343,33 @@ public class MainActivity extends AppCompatActivity {
         edtDuration.setText("");
 
         rgParking.clearCheck();
-        txtParkingError.setVisibility(View.GONE);
 
-        npLength.setValue(5);
+        txtParkingError.setVisibility(
+                View.GONE
+        );
 
+        edtLength.setText("");
+
+        /*
+         * Position 0 is "Select difficulty".
+         */
         spDifficulty.setSelection(0);
-        spWeather.setSelection(0);
+
+        if (spWeather.getAdapter() != null
+                && spWeather.getCount() > 0) {
+
+            spWeather.setSelection(0);
+        }
 
         tilName.setError(null);
         tilLocation.setError(null);
         tilDate.setError(null);
+        tilLength.setError(null);
+
+        /*
+         * Description and duration are optional,
+         * but existing errors are cleared when resetting.
+         */
         tilDescription.setError(null);
         tilDuration.setError(null);
     }
@@ -256,60 +378,154 @@ public class MainActivity extends AppCompatActivity {
 
         boolean isValid = true;
 
-        // Xóa lỗi cũ
+        /*
+         * Clear previous validation errors.
+         */
+        tilLength.setError(null);
         tilName.setError(null);
         tilLocation.setError(null);
         tilDate.setError(null);
-        tilDuration.setError(null);
         tilDescription.setError(null);
+        tilDuration.setError(null);
 
-        // Hike Name
-        if (edtName.getText().toString().trim().isEmpty()) {
-            tilName.setError("Please enter hike name");
+        txtParkingError.setVisibility(
+                View.GONE
+        );
+
+        String name =
+                edtName.getText() == null
+                        ? ""
+                        : edtName.getText()
+                        .toString()
+                        .trim();
+
+        String location =
+                edtLocation.getText() == null
+                        ? ""
+                        : edtLocation.getText()
+                        .toString()
+                        .trim();
+
+        String date =
+                edtDate.getText() == null
+                        ? ""
+                        : edtDate.getText()
+                        .toString()
+                        .trim();
+        String lengthText = getText(edtLength);
+
+        /*
+         * Name — Required
+         */
+        if (name.isEmpty()) {
+
+            tilName.setError(
+                    "Please enter hike name"
+            );
+
             isValid = false;
         }
 
-        // Location
-        if (edtLocation.getText().toString().trim().isEmpty()) {
-            tilLocation.setError("Please enter location");
+        /*
+         * Location — Required
+         */
+        if (location.isEmpty()) {
+
+            tilLocation.setError(
+                    "Please enter location"
+            );
+
             isValid = false;
         }
 
-        // Date
-        if (edtDate.getText().toString().trim().isEmpty()) {
-            tilDate.setError("Please select date");
+        /*
+         * Date — Required
+         */
+        if (date.isEmpty()) {
+
+            tilDate.setError(
+                    "Please select date"
+            );
+
             isValid = false;
         }
 
+        /*
+         * Parking — Required
+         */
+        if (rgParking.getCheckedRadioButtonId() == -1) {
 
-        // Estimated Duration
-        String duration = edtDuration.getText().toString().trim();
+            txtParkingError.setText(
+                    "Please select parking option"
+            );
 
-        if (duration.isEmpty()) {
-            tilDuration.setError("Please enter estimated duration");
+            txtParkingError.setVisibility(
+                    View.VISIBLE
+            );
+
+            isValid = false;
+        }
+
+        /*
+         * Length — Required
+         */
+        if (lengthText.isEmpty()) {
+            tilLength.setError("Please enter hike length");
             isValid = false;
         } else {
             try {
-                int hour = Integer.parseInt(duration);
+                int length = Integer.parseInt(lengthText);
 
-                if (hour <= 0) {
-                    tilDuration.setError("Duration must be greater than 0");
+                if (length <= 0) {
+                    tilLength.setError(
+                            "Length must be greater than 0"
+                    );
                     isValid = false;
                 }
             } catch (NumberFormatException e) {
-                tilDuration.setError("Invalid duration");
+                tilLength.setError(
+                        "Please enter a valid length"
+                );
                 isValid = false;
             }
         }
 
-        if (rgParking.getCheckedRadioButtonId() == -1) {
-            txtParkingError.setText("Please select parking option");
-            txtParkingError.setVisibility(View.VISIBLE);
+        /*
+         * Difficulty — Required.
+         * Position 0 is the placeholder "Select difficulty".
+         */
+        if (spDifficulty.getSelectedItemPosition() == 0) {
+
+            new AlertDialog.Builder(this)
+                    .setTitle("Difficulty Required")
+                    .setMessage(
+                            "Please select a difficulty level."
+                    )
+                    .setPositiveButton(
+                            "OK",
+                            null
+                    )
+                    .show();
+
             isValid = false;
-        } else {
-            txtParkingError.setVisibility(View.GONE);
         }
 
         return isValid;
+    }
+
+    private String getText(TextInputEditText editText) {
+
+        if (editText.getText() == null) {
+            return "";
+        }
+
+        return editText.getText()
+                .toString()
+                .trim();
+    }
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return true;
     }
 }

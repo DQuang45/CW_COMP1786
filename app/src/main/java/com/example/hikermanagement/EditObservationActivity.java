@@ -65,6 +65,10 @@ public class EditObservationActivity
                         showUpdateConfirmation();
                     }
                 });
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().show();
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     private void bindViews() {
@@ -401,5 +405,10 @@ public class EditObservationActivity
         if (databaseHelper != null) {
             databaseHelper.close();
         }
+    }
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return true;
     }
 }

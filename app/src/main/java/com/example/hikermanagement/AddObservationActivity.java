@@ -100,6 +100,11 @@ public class AddObservationActivity
         databaseHelper =
                 new DatabaseHelper(this);
 
+        /*
+         * defaults to the current date and time.
+         */
+        setCurrentDateTime();
+
         edtObservationTime.setOnClickListener(v ->
                 showDateTimePicker()
         );
@@ -110,6 +115,45 @@ public class AddObservationActivity
                 saveObservation();
             }
         });
+
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+    }
+
+    private void setCurrentDateTime() {
+
+        Calendar calendar =
+                Calendar.getInstance();
+
+        int year =
+                calendar.get(Calendar.YEAR);
+
+        int month =
+                calendar.get(Calendar.MONTH);
+
+        int day =
+                calendar.get(Calendar.DAY_OF_MONTH);
+
+        int hour =
+                calendar.get(Calendar.HOUR_OF_DAY);
+
+        int minute =
+                calendar.get(Calendar.MINUTE);
+
+        String currentDateTime =
+                String.format(
+                        "%02d/%02d/%04d %02d:%02d",
+                        day,
+                        month + 1,
+                        year,
+                        hour,
+                        minute
+                );
+
+        edtObservationTime.setText(
+                currentDateTime
+        );
     }
 
     private void showDateTimePicker() {
@@ -286,5 +330,11 @@ public class AddObservationActivity
                 .getText()
                 .toString()
                 .trim();
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return true;
     }
 }
