@@ -17,33 +17,33 @@ import java.util.Calendar;
 
 public class EditHikeActivity extends AppCompatActivity {
 
-    // TextInputLayout
+    // Layout containers used to display validation errors
     private TextInputLayout tilEditName, tilEditLocation, tilEditDate
             , tilEditDuration, tilEditLength, tilEditDescription;
 
 
-    // EditText
+    // Input fields for editing hike information
     private TextInputEditText edtEditName, edtEditLocation, edtEditDate
             , edtEditDescription, edtEditDuration, edtEditLength;
 
 
-    // Parking
+    // RadioGroup used to select the parking option
     private RadioGroup rgEditParking;
 
-    // Spinner
+    // Spinners used to select difficulty and weather
     private Spinner spEditDifficulty;
     private Spinner spEditWeather;
 
-    // Button
+    // Button used to update the hike
     private Button btnUpdateHike;
 
-    // Database
+    // Helper class for database operations
     private DatabaseHelper databaseHelper;
 
-    // ID của Hike đang sửa
+    // ID of the hike currently being edited
     private int hikeId;
 
-    // Dữ liệu Spinner
+    // Available difficulty options
     private final String[] difficultyOptions = {
             "Easy",
             "Medium",
@@ -60,25 +60,32 @@ public class EditHikeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Load the edit hike layout
         setContentView(R.layout.activity_edit_hike);
 
+        // Initialize the database helper
         databaseHelper = new DatabaseHelper(this);
 
+        // Connect Java variables with XML views
         bindViews();
 
-
+        // Configure the difficulty and weather spinners
         setupSpinners();
 
+        // Receive and display the selected hike data
         receiveHikeData();
 
+        // Configure the date picker
         setupDatePicker();
 
+        // Validate the input before showing the update confirmation
         btnUpdateHike.setOnClickListener(v -> {
 
             if (validateInput()) {
                 showUpdateConfirmation();
             }
         });
+        // Configure the ActionBar for the edit screen
         if (getSupportActionBar() != null) {
             getSupportActionBar().show();
             getSupportActionBar().setTitle("Edit Hike");
@@ -86,6 +93,7 @@ public class EditHikeActivity extends AppCompatActivity {
         }
     }
 
+    // Initialize and connect all UI components
     private void bindViews() {
 
         tilEditName = findViewById(R.id.tilEditName);
@@ -113,8 +121,10 @@ public class EditHikeActivity extends AppCompatActivity {
     }
 
 
+    // Set up adapters and options for the spinners
     private void setupSpinners() {
 
+        // Create an adapter for the difficulty spinner
         ArrayAdapter<String> difficultyAdapter =
                 new ArrayAdapter<>(
                         this,
@@ -122,12 +132,15 @@ public class EditHikeActivity extends AppCompatActivity {
                         difficultyOptions
                 );
 
+        // Define the layout used for the dropdown list
         difficultyAdapter.setDropDownViewResource(
                 android.R.layout.simple_spinner_dropdown_item
         );
 
+        // Attach the difficulty adapter to the spinner
         spEditDifficulty.setAdapter(difficultyAdapter);
 
+        // Create an adapter for the weather spinner
         ArrayAdapter<String> weatherAdapter =
                 new ArrayAdapter<>(
                         this,
@@ -135,17 +148,22 @@ public class EditHikeActivity extends AppCompatActivity {
                         weatherOptions
                 );
 
+        // Define the layout used for the dropdown list
         weatherAdapter.setDropDownViewResource(
                 android.R.layout.simple_spinner_dropdown_item
         );
 
+        // Attach the weather adapter to the spinner
         spEditWeather.setAdapter(weatherAdapter);
     }
 
+    // Retrieve the selected hike data passed from the previous Activity
     private void receiveHikeData() {
+        // Retrieve the hike ID from the Intent
 
         hikeId = getIntent().getIntExtra("HIKE_ID", -1);
 
+        // Retrieve the existing hike information
         String name =
                 getIntent().getStringExtra("HIKE_NAME");
 
@@ -173,6 +191,7 @@ public class EditHikeActivity extends AppCompatActivity {
         String duration =
                 getIntent().getStringExtra("HIKE_DURATION");
 
+        // Check whether a valid hike ID was received
         if (hikeId == -1) {
 
             new AlertDialog.Builder(this)
@@ -184,6 +203,7 @@ public class EditHikeActivity extends AppCompatActivity {
             return;
         }
 
+        // Populate the input fields with the existing hike data
         edtEditName.setText(name);
         edtEditLocation.setText(location);
         edtEditDate.setText(date);
@@ -191,18 +211,21 @@ public class EditHikeActivity extends AppCompatActivity {
         edtEditDuration.setText(duration);
         edtEditLength.setText(String.valueOf(length));
 
+        // Set the correct parking option
         if ("YES".equalsIgnoreCase(parking)) {
             rgEditParking.check(R.id.rbEditYes);
         } else if ("NO".equalsIgnoreCase(parking)) {
             rgEditParking.check(R.id.rbEditNo);
         }
 
+        // Set the selected difficulty value
         setSpinnerSelection(
                 spEditDifficulty,
                 difficultyOptions,
                 difficulty
         );
 
+        // Set the selected weather value
         setSpinnerSelection(
                 spEditWeather,
                 weatherOptions,
@@ -210,16 +233,19 @@ public class EditHikeActivity extends AppCompatActivity {
         );
     }
 
+    // Select the matching value in a Spinner
     private void setSpinnerSelection(
             Spinner spinner,
             String[] options,
             String selectedValue
     ) {
 
+        // Stop if there is no selected value
         if (selectedValue == null) {
             return;
         }
 
+        // Search for the matching option
         for (int i = 0; i < options.length; i++) {
 
             if (options[i].equalsIgnoreCase(selectedValue)) {
@@ -233,8 +259,10 @@ public class EditHikeActivity extends AppCompatActivity {
 
         edtEditDate.setOnClickListener(v -> {
 
+            // Get the current date
             Calendar calendar = Calendar.getInstance();
 
+            // Create a date picker dialog
             int year = calendar.get(Calendar.YEAR);
             int month = calendar.get(Calendar.MONTH);
             int day = calendar.get(Calendar.DAY_OF_MONTH);
@@ -244,6 +272,7 @@ public class EditHikeActivity extends AppCompatActivity {
                             EditHikeActivity.this,
                             (view, selectedYear, selectedMonth, selectedDay) -> {
 
+                                // Format the selected date
                                 String selectedDate = String.format(
                                         "%02d/%02d/%04d",
                                         selectedDay,
@@ -251,6 +280,7 @@ public class EditHikeActivity extends AppCompatActivity {
                                         selectedYear
                                 );
 
+                                // Display the selected date
                                 edtEditDate.setText(selectedDate);
                             },
                             year,
@@ -258,41 +288,49 @@ public class EditHikeActivity extends AppCompatActivity {
                             day
                     );
 
+            // Display the date picker
             datePickerDialog.show();
         });
     }
 
+    // Validate all required input fields
     private boolean validateInput() {
 
         boolean isValid = true;
 
+        // Clear previous validation errors
         tilEditLength.setError(null);
         tilEditName.setError(null);
         tilEditLocation.setError(null);
         tilEditDate.setError(null);
         tilEditDuration.setError(null);
 
+        // Retrieve and clean input values
         String name = getText(edtEditName);
         String location = getText(edtEditLocation);
         String date = getText(edtEditDate);
         String duration = getText(edtEditDuration);
         String lengthText = getText(edtEditLength);
 
+        // Validate the hike name
         if (name.isEmpty()) {
             tilEditName.setError("Please enter hike name");
             isValid = false;
         }
 
+        // Validate the hike location
         if (location.isEmpty()) {
             tilEditLocation.setError("Please enter location");
             isValid = false;
         }
 
+        // Validate the hike date
         if (date.isEmpty()) {
             tilEditDate.setError("Please select date");
             isValid = false;
         }
 
+        // Validate the hike length
         if (lengthText.isEmpty()) {
 
             tilEditLength.setError(
@@ -305,9 +343,11 @@ public class EditHikeActivity extends AppCompatActivity {
 
             try {
 
+                // Convert the length from String to integer
                 int length =
                         Integer.parseInt(lengthText);
 
+                // Check that the length is greater than zero
                 if (length <= 0) {
 
                     tilEditLength.setError(
@@ -319,6 +359,7 @@ public class EditHikeActivity extends AppCompatActivity {
 
             } catch (NumberFormatException e) {
 
+                // Handle invalid numeric input
                 tilEditLength.setError(
                         "Please enter a valid length"
                 );
@@ -348,12 +389,15 @@ public class EditHikeActivity extends AppCompatActivity {
         return isValid;
     }
 
+    // Safely retrieve and trim text from an input field
     private String getText(TextInputEditText editText) {
 
+        // Return an empty string if the field contains no text
         if (editText.getText() == null) {
             return "";
         }
 
+        // Convert the input to String and remove extra spaces
         return editText.getText()
                 .toString()
                 .trim();
@@ -385,6 +429,7 @@ public class EditHikeActivity extends AppCompatActivity {
             parking = "NO";
         }
 
+        // Build a summary of the updated information
         String message =
                 "Name: " + name
                         + "\nLocation: " + location
@@ -401,6 +446,8 @@ public class EditHikeActivity extends AppCompatActivity {
         new AlertDialog.Builder(this)
                 .setTitle("Confirm Update")
                 .setMessage(message)
+
+                // Update the hike when the user confirms
                 .setPositiveButton("YES", (dialog, which) -> {
 
                     updateHike(
@@ -416,10 +463,13 @@ public class EditHikeActivity extends AppCompatActivity {
                     );
 
                 })
+
+                // Cancel the update
                 .setNegativeButton("NO", null)
                 .show();
     }
 
+    // Update the selected hike in the database
     private void updateHike(
             String name,
             String location,
@@ -432,6 +482,7 @@ public class EditHikeActivity extends AppCompatActivity {
             String duration
     ) {
 
+        // Send the updated information to the database
         boolean result = databaseHelper.updateHike(
                 hikeId,
                 name,
@@ -469,8 +520,10 @@ public class EditHikeActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+
         super.onDestroy();
 
+        // Close the database connection when the Activity is destroyed
         if (databaseHelper != null) {
             databaseHelper.close();
         }

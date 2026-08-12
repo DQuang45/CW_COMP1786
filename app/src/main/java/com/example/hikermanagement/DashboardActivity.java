@@ -1,5 +1,6 @@
 package com.example.hikermanagement;
 
+// Import necessary libraries for Activity, Intent, and UI handling
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -18,23 +19,30 @@ import com.google.android.material.textfield.TextInputEditText;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DashboardActivity
-        extends AppCompatActivity {
+public class DashboardActivity extends AppCompatActivity {
 
+    // EditText used to enter the search keyword "hike"
     private TextInputEditText edtSearch;
 
+    // Buttons for adding a new hike and deleting all hikes
     private Button btnAddHike;
     private Button btnDeleteAllHikes;
 
+    // RecyclerView used to display a list of hikes
     private RecyclerView recyclerViewHikes;
 
+    // TextView displaying a message when there are no hikes
+    // and the number of search results found
     private TextView txtEmpty;
     private TextView txtResultCount;
 
+    // DatabaseHelper is used to perform database operations.
     private DatabaseHelper databaseHelper;
 
+    // Adapter connecting Hike data to the RecyclerView
     private HikeAdapter hikeAdapter;
 
+    // List of currently displayed hikes
     private List<Hike> currentHikeList =
             new ArrayList<>();
 
@@ -43,10 +51,14 @@ public class DashboardActivity
 
         super.onCreate(savedInstanceState);
 
+        // Load the dashboard layout
         setContentView(R.layout.activity_dashboard);
+        // Hide the ActionBar
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
         }
+
+        // Initialize UI components
         edtSearch = findViewById(R.id.edtSearch);
 
         btnAddHike = findViewById(R.id.btnAddHike);
@@ -59,30 +71,41 @@ public class DashboardActivity
 
         txtResultCount = findViewById(R.id.txtResultCount);
 
+        // Initialize the database helper
         databaseHelper = new DatabaseHelper(this);
 
+        // Set a vertical layout manager for the RecyclerView
         recyclerViewHikes.setLayoutManager(new LinearLayoutManager(this));
 
+        // Create the hike adapter and define the action
+        // when a hike is selected
         hikeAdapter = new HikeAdapter(new ArrayList<>(), this::showHikeDetails);
 
+        // Attach the adapter to the RecyclerView
         recyclerViewHikes.setAdapter(hikeAdapter);
 
+        // Handle the Add Hike button click
         btnAddHike.setOnClickListener(v -> {
 
+            // Create an Intent to open the MainActivity
             Intent intent = new Intent(
                     DashboardActivity.this,
                     MainActivity.class
             );
 
+            // Open the MainActivity
             startActivity(intent);
         });
 
+        // Handle the Delete All Hikes button click
         btnDeleteAllHikes.setOnClickListener(v -> {
 
+            // Show a confirmation dialog before deleting
             confirmDeleteAllHikes();
 
         });
 
+        // Monitor changes in the search field
         edtSearch.addTextChangedListener(
                 new TextWatcher() {
 
@@ -136,10 +159,8 @@ public class DashboardActivity
 
         } else {
 
-            currentHikeList =
-                    databaseHelper.searchHikes(
-                            keyword
-                    );
+            // Search the database using the keyword
+            currentHikeList = databaseHelper.searchHikes(keyword);
 
             displayHikes(currentHikeList);
         }
@@ -187,6 +208,7 @@ public class DashboardActivity
         hikeAdapter.updateData(hikeList);
     }
 
+    // Display the details of the selected hike
     private void showHikeDetails(Hike hike) {
 
         String message =
@@ -408,6 +430,7 @@ public class DashboardActivity
 
         super.onDestroy();
 
+        // Close the database connection when the Activity is destroyed
         if (databaseHelper != null) {
             databaseHelper.close();
         }
@@ -415,6 +438,7 @@ public class DashboardActivity
 
     private void confirmDeleteAllHikes() {
 
+        // Check whether there are any hikes to delete
         if (currentHikeList == null
                 || currentHikeList.isEmpty()) {
 
@@ -455,8 +479,8 @@ public class DashboardActivity
     }
     private void deleteAllHikes() {
 
-        boolean result =
-                databaseHelper.deleteAllHikes();
+        // Delete all hikes using the database helper
+        boolean result = databaseHelper.deleteAllHikes();
 
         if (result) {
 

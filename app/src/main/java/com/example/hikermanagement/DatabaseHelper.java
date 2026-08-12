@@ -121,6 +121,84 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         return result != -1;
     }
+    public boolean updateHike(
+            int id,
+            String name,
+            String location,
+            String date,
+            String parking,
+            int length,
+            String difficulty,
+            String description,
+            String weather,
+            String duration
+    ) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+
+        values.put(COL_NAME, name);
+        values.put(COL_LOCATION, location);
+        values.put(COL_DATE, date);
+        values.put(COL_PARKING, parking);
+        values.put(COL_LENGTH, length);
+        values.put(COL_DIFFICULTY, difficulty);
+        values.put(COL_DESCRIPTION, description);
+        values.put(COL_WEATHER, weather);
+        values.put(COL_DURATION, duration);
+
+        int result = db.update(
+                TABLE_NAME,
+                values,
+                COL_ID + " = ?",
+                new String[]{String.valueOf(id)}
+        );
+
+        return result > 0;
+    }
+
+    public boolean deleteHike(int id) {
+
+        SQLiteDatabase db =
+                this.getWritableDatabase();
+
+        db.beginTransaction();
+
+        try {
+
+            db.delete(
+                    TABLE_OBSERVATIONS,
+                    OBS_COL_HIKE_ID + " = ?",
+                    new String[]{
+                            String.valueOf(id)
+                    }
+            );
+
+            int result = db.delete(
+                    TABLE_NAME,
+                    COL_ID + " = ?",
+                    new String[]{
+                            String.valueOf(id)
+                    }
+            );
+
+            db.setTransactionSuccessful();
+
+            return result > 0;
+
+        } catch (Exception exception) {
+
+            exception.printStackTrace();
+
+            return false;
+
+        } finally {
+
+            db.endTransaction();
+        }
+    }
+
     public List<Hike> getAllHikes() {
 
         List<Hike> hikeList = new ArrayList<>();
@@ -296,83 +374,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return hikeList;
     }
 
-    public boolean deleteHike(int id) {
-
-        SQLiteDatabase db =
-                this.getWritableDatabase();
-
-        db.beginTransaction();
-
-        try {
-
-            db.delete(
-                    TABLE_OBSERVATIONS,
-                    OBS_COL_HIKE_ID + " = ?",
-                    new String[]{
-                            String.valueOf(id)
-                    }
-            );
-
-            int result = db.delete(
-                    TABLE_NAME,
-                    COL_ID + " = ?",
-                    new String[]{
-                            String.valueOf(id)
-                    }
-            );
-
-            db.setTransactionSuccessful();
-
-            return result > 0;
-
-        } catch (Exception exception) {
-
-            exception.printStackTrace();
-
-            return false;
-
-        } finally {
-
-            db.endTransaction();
-        }
-    }
-
-    public boolean updateHike(
-            int id,
-            String name,
-            String location,
-            String date,
-            String parking,
-            int length,
-            String difficulty,
-            String description,
-            String weather,
-            String duration
-    ) {
-
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        ContentValues values = new ContentValues();
-
-        values.put(COL_NAME, name);
-        values.put(COL_LOCATION, location);
-        values.put(COL_DATE, date);
-        values.put(COL_PARKING, parking);
-        values.put(COL_LENGTH, length);
-        values.put(COL_DIFFICULTY, difficulty);
-        values.put(COL_DESCRIPTION, description);
-        values.put(COL_WEATHER, weather);
-        values.put(COL_DURATION, duration);
-
-        int result = db.update(
-                TABLE_NAME,
-                values,
-                COL_ID + " = ?",
-                new String[]{String.valueOf(id)}
-        );
-
-        return result > 0;
-    }
 
     public boolean insertObservation(
             int hikeId,
