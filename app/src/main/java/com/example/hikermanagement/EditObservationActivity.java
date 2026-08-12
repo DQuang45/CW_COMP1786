@@ -1,5 +1,7 @@
 package com.example.hikermanagement;
 
+import static android.content.Intent.getIntent;
+
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
